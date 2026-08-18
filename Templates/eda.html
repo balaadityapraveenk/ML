@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Exploratory Analysis - Placement Prediction Project{% endblock %}
+
+{% block content %}
+    <h2>Exploratory Data Analysis (EDA)</h2>
+    <p>Perform real-time exploratory analysis on the placement dataset. Select a representation style first, select feature columns, and view the updated output instantly.</p>
+
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if summary %}
+        <!-- Distribution Chart Controls & Visuals -->
+        <div class="eda-controls-container">
+            <!-- 1. Select Representation Type -->
+            <div class="control-group">
+                <label><strong>Representation Type:</strong></label>
+                <div class="btn-group representation-btn-group">
+                    <button type="button" class="btn active" data-value="histogram">Histogram</button>
+                    <button type="button" class="btn" data-value="bar">Bar Chart</button>
+                    <button type="button" class="btn" data-value="pie">Pie Chart</button>
+                    <button type="button" class="btn" data-value="line">Line Chart</button>
+                    <button type="button" class="btn" data-value="scatter">Scatter Plot</button>
+                </div>
+            </div>
+
+
+            <!-- 2. Single Column Select wrapper -->
+            <div id="single-col-group" class="control-group">
+                <label id="single-col-label" for="column-select"><strong>Select Column:</strong></label>
+                <select id="column-select" class="eda-select"></select>
+            </div>
+
+            <!-- 3. Dual Column Select wrapper (for scatter plot) -->
+            <div id="dual-col-group" class="control-group hidden">
+                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                    <div class="control-group">
+                        <label for="x-column-select"><strong>Select X Column:</strong></label>
+                        <select id="x-column-select" class="eda-select"></select>
+                    </div>
+                    <div class="control-group">
+                        <label for="y-column-select"><strong>Select Y Column:</strong></label>
+                        <select id="y-column-select" class="eda-select"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="eda-main-grid">
+            <!-- Chart Container -->
+            <div class="eda-chart-panel">
+                <canvas id="edaChart"></canvas>
+            </div>
+
+            <!-- Stats Panel for Numerical Variables -->
+            <div id="eda-stats-panel" class="eda-stats-panel hidden">
+                <h4>Descriptive Statistics</h4>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Mean</span>
+                        <span id="stat-mean" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Median</span>
+                        <span id="stat-median" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Std Dev</span>
+                        <span id="stat-std" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Min</span>
+                        <span id="stat-min" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Max</span>
+                        <span id="stat-max" class="stat-value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Panel for Scatter Plot Correlation -->
+            <div id="eda-scatter-stats-panel" class="eda-stats-panel hidden">
+                <h4>Correlation Analysis</h4>
+                <div class="stats-grid">
+                    <div class="stat-card" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                        <span class="stat-label">Pearson Correlation (r)</span>
+                        <span id="scatter-correlation" class="stat-value" style="font-size: 1.8rem; color: #4f46e5;">-</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #6b7280; line-height: 1.4; margin-top: 0.5rem;">
+                        This value measures the linear strength between the two variables:
+                        <br>• Close to 1: Strong positive
+                        <br>• Close to -1: Strong negative
+                        <br>• Close to 0: Weak or no correlation
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Correlation Heatmap Section -->
+        <h3 style="margin-top: 3rem;">Correlation Matrix Heatmap</h3>
+        <p style="margin-bottom: 1.5rem; font-size: 0.95rem; color: #4b5563;">
+            A correlation coefficient measures the linear relationship between two variables. 
+            Strength is represented by colors: <span style="color: #4f46e5; font-weight: bold;">deep blue</span> represents strong positive correlation, 
+            and <span style="color: #ef4444; font-weight: bold;">deep red</span> represents strong negative correlation.
+        </p>
+        
+        <div class="heatmap-wrapper">
+            <table class="heatmap-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        {% for col in summary.correlation['columns'] %}
+                            <th title="{{ col }}">{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row_col in summary.correlation['columns'] %}
+                        {% set row_index = loop.index0 %}
+                        <tr>
+                            <th>{{ row_col }}</th>
+                            {% for col in summary.correlation['columns'] %}
+                                {% set val = summary.correlation['values'][row_index][loop.index0] %}
+                                {% if val > 0 %}
+                                    <td class="heatmap-cell" style="background-color: rgba(79, 70, 229, {{ val }}); color: {{ 'white' if val > 0.55 else 'black' }};" title="{{ row_col }} vs {{ col }} = {{ val }}">
+                                        {{ val }}
+                                    </td>
+                                {% elif val < 0 %}
+                                    {% set abs_val = val | abs %}
+                                    <td class="heatmap-cell" style="background-color: rgba(239, 68, 68, {{ abs_val }}); color: {{ 'white' if abs_val > 0.55 else 'black' }};" title="{{ row_col }} vs {{ col }} = {{ val }}">
+                                        {{ val }}
+                                    </td>
+                                {% else %}
+                                    <td class="heatmap-cell" style="background-color: #ffffff; color: black;" title="{{ row_col }} vs {{ col }} = 0">
+                                        0.0
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Chart.js and rendering scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const edaData = {{ summary.eda_data | tojson }};
+            const numericSample = {{ summary.numeric_sample | tojson }};
+            const correlationMatrix = {{ summary.correlation | tojson }};
+
+            const numericColumns = [];
+            const categoricalColumns = [];
+            for (const [colName, colInfo] of Object.entries(edaData)) {
+                if (colInfo.type === 'numerical') {
+                    numericColumns.push(colName);
+                } else {
+                    categoricalColumns.push(colName);
+                }
+            }
+
+            let selectedRepresentation = 'histogram';
+            const singleColGroup = document.getElementById('single-col-group');
+            const singleColLabel = document.getElementById('single-col-label');
+            const colSelect = document.getElementById('column-select');
+            const dualColGroup = document.getElementById('dual-col-group');
+            const xColSelect = document.getElementById('x-column-select');
+            const yColSelect = document.getElementById('y-column-select');
+            
+            const statsPanel = document.getElementById('eda-stats-panel');
+            const scatterStatsPanel = document.getElementById('eda-scatter-stats-panel');
+            const ctx = document.getElementById('edaChart').getContext('2d');
+            let edaChartInstance = null;
+
+            function populateDropdown(selectElement, columnsList, defaultSelectedValue = '') {
+                selectElement.innerHTML = '';
+                columnsList.forEach(col => {
+                    const opt = document.createElement('option');
+                    opt.value = col;
+                    opt.textContent = col;
+                    if (col === defaultSelectedValue) {
+                        opt.selected = true;
+                    }
+                    selectElement.appendChild(opt);
+                });
+            }
+
+            function handleRepresentationChange() {
+                const rep = selectedRepresentation;
+                
+                statsPanel.classList.add('hidden');
+                if (scatterStatsPanel) scatterStatsPanel.classList.add('hidden');
+
+                if (rep === 'histogram' || rep === 'line') {
+                    singleColGroup.classList.remove('hidden');
+                    dualColGroup.classList.add('hidden');
+                    singleColLabel.innerHTML = '<strong>Select Numerical Column:</strong>';
+                    
+                    const prevVal = colSelect.value;
+                    populateDropdown(colSelect, numericColumns, numericColumns.includes(prevVal) ? prevVal : 'CGPA');
+                } else if (rep === 'bar' || rep === 'pie') {
+                    singleColGroup.classList.remove('hidden');
+                    dualColGroup.classList.add('hidden');
+                    singleColLabel.innerHTML = '<strong>Select Categorical Column:</strong>';
+                    
+                    const prevVal = colSelect.value;
+                    populateDropdown(colSelect, categoricalColumns, categoricalColumns.includes(prevVal) ? prevVal : 'Gender');
+                } else if (rep === 'scatter') {
+                    singleColGroup.classList.add('hidden');
+                    dualColGroup.classList.remove('hidden');
+                    
+                    populateDropdown(xColSelect, numericColumns, 'CGPA');
+                    populateDropdown(yColSelect, numericColumns, 'Salary Package');
+                }
+                
+                updateEDA();
+            }
+
+            function updateEDA() {
+                const rep = selectedRepresentation;
+                
+                if (rep === 'histogram') {
+                    const colName = colSelect.value;
+                    const colData = edaData[colName];
+                    if (!colData) return;
+
+                    statsPanel.classList.remove('hidden');
+                    if (scatterStatsPanel) scatterStatsPanel.classList.add('hidden');
+
+                    document.getElementById('stat-mean').textContent = colData.mean;
+                    document.getElementById('stat-median').textContent = colData.median;
+                    document.getElementById('stat-std').textContent = colData.std;
+                    document.getElementById('stat-min').textContent = colData.min;
+                    document.getElementById('stat-max').textContent = colData.max;
+
+                    const labels = [];
+                    for (let i = 0; i < colData.counts.length; i++) {
+                        labels.push(`[${colData.bin_edges[i]}, ${colData.bin_edges[i+1]})`);
+                    }
+
+                    renderChart('bar', labels, colData.counts, 'Frequency', {
+                        barPercentage: 1.0,
+                        categoryPercentage: 0.98,
+                        backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                        borderColor: 'rgb(79, 70, 229)',
+                        borderWidth: 1
+                    });
+
+                } else if (rep === 'line') {
+                    const colName = colSelect.value;
+                    const colData = edaData[colName];
+                    if (!colData) return;
+
+                    statsPanel.classList.remove('hidden');
+                    if (scatterStatsPanel) scatterStatsPanel.classList.add('hidden');
+
+                    document.getElementById('stat-mean').textContent = colData.mean;
+                    document.getElementById('stat-median').textContent = colData.median;
+                    document.getElementById('stat-std').textContent = colData.std;
+                    document.getElementById('stat-min').textContent = colData.min;
+                    document.getElementById('stat-max').textContent = colData.max;
+
+                    const subsetSample = numericSample.slice(0, 200);
+                    const values = subsetSample.map(row => row[colName]);
+                    const labels = subsetSample.map((_, idx) => idx + 1);
+
+                    renderChart('line', labels, values, 'Values (First 200 Records)', {
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: 'rgb(79, 70, 229)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.15,
+                        pointRadius: 1.5
+                    });
+
+                } else if (rep === 'bar' || rep === 'pie') {
+                    const colName = colSelect.value;
+                    const colData = edaData[colName];
+                    if (!colData) return;
+
+                    statsPanel.classList.add('hidden');
+                    if (scatterStatsPanel) scatterStatsPanel.classList.add('hidden');
+
+                    const colorPalette = [
+                        'rgba(99, 102, 241, 0.75)',
+                        'rgba(16, 185, 129, 0.75)',
+                        'rgba(245, 158, 11, 0.75)',
+                        'rgba(239, 68, 68, 0.75)',
+                        'rgba(59, 130, 246, 0.75)',
+                        'rgba(139, 92, 246, 0.75)',
+                        'rgba(236, 72, 153, 0.75)',
+                        'rgba(107, 114, 128, 0.75)'
+                    ];
+                    const borderPalette = [
+                        'rgb(79, 70, 229)',
+                        'rgb(5, 150, 105)',
+                        'rgb(217, 119, 6)',
+                        'rgb(220, 38, 38)',
+                        'rgb(37, 99, 235)',
+                        'rgb(124, 58, 237)',
+                        'rgb(219, 39, 119)',
+                        'rgb(75, 85, 99)'
+                    ];
+
+                    const bgColors = colData.labels.map((_, i) => colorPalette[i % colorPalette.length]);
+                    const borderColors = colData.labels.map((_, i) => borderPalette[i % borderPalette.length]);
+
+                    renderChart(rep, colData.labels, colData.counts, 'Records', {
+                        backgroundColor: rep === 'pie' ? bgColors : 'rgba(16, 185, 129, 0.75)',
+                        borderColor: rep === 'pie' ? borderColors : 'rgb(5, 150, 105)',
+                        borderWidth: 1
+                    });
+
+                } else if (rep === 'scatter') {
+                    const colX = xColSelect.value;
+                    const colY = yColSelect.value;
+                    if (!colX || !colY) return;
+
+                    statsPanel.classList.add('hidden');
+                    if (scatterStatsPanel) scatterStatsPanel.classList.remove('hidden');
+
+                    let corrVal = 0.0;
+                    const colXIndex = correlationMatrix['columns'].indexOf(colX);
+                    const colYIndex = correlationMatrix['columns'].indexOf(colY);
+                    if (colXIndex !== -1 && colYIndex !== -1) {
+                        corrVal = correlationMatrix['values'][colXIndex][colYIndex];
+                    }
+                    document.getElementById('scatter-correlation').textContent = corrVal.toFixed(3);
+
+                    const scatterDataPoints = numericSample.map(row => ({
+                        x: row[colX],
+                        y: row[colY]
+                    }));
+
+                    renderScatterChart(scatterDataPoints, colX, colY);
+                }
+            }
+
+            function renderChart(type, labels, data, datasetLabel, styleConfig) {
+                if (edaChartInstance) {
+                    edaChartInstance.destroy();
+                }
+
+                const chartConfig = {
+                    type: type,
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: datasetLabel,
+                            data: data,
+                            ...styleConfig
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: type === 'pie',
+                                position: 'right'
+                            }
+                        }
+                    }
+                };
+
+                if (type === 'bar' || type === 'line') {
+                    chartConfig.options.scales = {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    };
+                }
+
+                edaChartInstance = new Chart(ctx, chartConfig);
+            }
+
+            function renderScatterChart(dataPoints, labelX, labelY) {
+                if (edaChartInstance) {
+                    edaChartInstance.destroy();
+                }
+
+                const chartConfig = {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: `${labelX} vs ${labelY}`,
+                            data: dataPoints,
+                            backgroundColor: 'rgba(79, 70, 229, 0.65)',
+                            borderColor: 'rgb(79, 70, 229)',
+                            borderWidth: 1,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: labelX,
+                                    font: { weight: 'bold' }
+                                },
+                                grid: { color: '#f3f4f6' }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: labelY,
+                                    font: { weight: 'bold' }
+                                },
+                                grid: { color: '#e5e7eb' }
+                            }
+                        }
+                    }
+                };
+
+                edaChartInstance = new Chart(ctx, chartConfig);
+            }
+
+            const repButtons = document.querySelectorAll('.representation-btn-group .btn');
+            repButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    repButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedRepresentation = btn.getAttribute('data-value');
+                    handleRepresentationChange();
+                });
+            });
+            colSelect.addEventListener('change', updateEDA);
+            xColSelect.addEventListener('change', updateEDA);
+            yColSelect.addEventListener('change', updateEDA);
+
+            window.addEventListener('load', () => {
+                handleRepresentationChange();
+            });
+        </script>
+    {% endif %}
+{% endblock %}

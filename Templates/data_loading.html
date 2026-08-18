@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Data Loading - Placement Prediction Project{% endblock %}
+
+{% block content %}
+    <h2>Data Loading</h2>
+
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if summary %}
+        <!-- 1. Dataset Summary Card -->
+        <div class="dashboard-section">
+            <h3>Dataset Summary</h3>
+            <table class="summary-table">
+                <tr>
+                    <td>Number of Rows</td>
+                    <td>{{ summary.n_rows }}</td>
+                </tr>
+                <tr>
+                    <td>Number of Columns</td>
+                    <td>{{ summary.n_cols }}</td>
+                </tr>
+                <tr>
+                    <td>Number of Duplicates</td>
+                    <td>{{ Duplicate_count }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- 2. Column Information Card -->
+        <div class="dashboard-section">
+            <h3>Column Information</h3>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Role</th>
+                            <th>Data Type</th>
+                            <th>Missing Values</th>
+                            <th>Duplicate Counts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for col in summary.columns %}
+                            <tr>
+                                <td><strong>{{ col }}</strong></td>
+                                <td>
+                                    {% set role = summary.roles[col] %}
+                                    {% if role == 'Target (Label)' %}
+                                        <span class="role-badge badge-target">{{ role }}</span>
+                                    {% elif role == 'Identifier' %}
+                                        <span class="role-badge badge-identifier">{{ role }}</span>
+                                    {% else %}
+                                        <span class="role-badge badge-feature">{{ role }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="type-badge">{{ summary.dtypes[col] }}</span>
+                                </td>
+                                <td>
+                                    {% if summary.missing_counts[col] > 0 %}
+                                        <span class="status-badge badge-danger" title="Has missing values">{{ summary.missing_counts[col] }}</span>
+                                    {% else %}
+                                        <span class="status-badge badge-success">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if summary.duplicate_counts[col] > 0 %}
+                                        <span class="status-badge badge-warning" title="Has duplicates">{{ summary.duplicate_counts[col] }}</span>
+                                    {% else %}
+                                        <span class="status-badge badge-success">0</span>
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. Dataset Preview Card -->
+        <div class="dashboard-section">
+            <h3>Preview (First 10 Rows)</h3>
+            <div class="table-wrapper">
+                <table class="data-table preview-data-table">
+                    <thead>
+                        <tr>
+                            {% for col in summary.columns %}
+                                <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in summary.preview %}
+                            <tr>
+                                {% for col in summary.columns %}
+                                    <td>{{ row[col] }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

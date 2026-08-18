@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Preprocessing - Placement Prediction Project{% endblock %}
+
+{% block content %}
+    <h2>Data Preprocessing</h2>
+
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if summary %}
+        <!-- 1. Preprocessing Summary Card -->
+        <div class="dashboard-section">
+            <h3>Preprocessing Execution Summary</h3>
+            <table class="summary-table prep-summary-table">
+                <tr>
+                    <td>Initial Shape</td>
+                    <td>{{ summary.initial_shape[0] }} rows, {{ summary.initial_shape[1] }} columns</td>
+                </tr>
+                <tr>
+                    <td>Final Shape</td>
+                    <td>{{ summary.final_shape[0] }} rows, {{ summary.final_shape[1] }} columns</td>
+                </tr>
+                <tr>
+                    <td>Dropped Columns</td>
+                    <td>
+                        <span class="dropped-column-badge">{{ summary.dropped_columns | join(', ') }}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- 2. Imputed Columns Card -->
+        <div class="dashboard-section">
+            <h3>Imputed Columns (Nulls Replaced by Median)</h3>
+            <table class="data-table prep-impute-table" style="max-width: 600px; margin-bottom: 0.5rem;">
+                <thead>
+                    <tr>
+                        <th>Column Name</th>
+                        <th>Imputed Median Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for col, val in summary.imputed_columns.items() %}
+                        <tr>
+                            <td><strong>{{ col }}</strong></td>
+                            <td>
+                                <span class="imputed-value-badge">{{ val }}</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. Categorical Encodings Card -->
+        <div class="dashboard-section">
+            <h3>Categorical Encoding (Label Encoding Classes)</h3>
+            <div class="table-wrapper prep-encode-wrapper">
+                <table class="data-table prep-encode-table">
+                    <thead>
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Original Categories Mapping (Class Values)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for col, categories in summary.encoded_columns.items() %}
+                            <tr>
+                                <td><strong>{{ col }}</strong></td>
+                                <td class="cat-list-cell">
+                                    <div class="category-tags-container">
+                                        {% for cat in categories %}
+                                            <span class="category-tag">{{ cat }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. Standardized Columns Card -->
+        <div class="dashboard-section">
+            <h3>Standardized Numeric Columns</h3>
+            <p style="margin-bottom: 1rem; color: #4b5563; font-size: 0.95rem;">
+                The following numerical columns were standardized (mean-centered and scaled to unit variance):
+            </p>
+            <div class="scaled-columns-container">
+                {% for col in summary.scaled_columns %}
+                    <span class="scaled-column-tag">{{ col }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 5. Preprocessed Preview Card -->
+        <div class="dashboard-section">
+            <h3>Preprocessed Dataset Preview (First 10 Rows)</h3>
+            <div class="table-wrapper prep-preview-wrapper">
+                <table class="data-table prep-preview-table">
+                    <thead>
+                        <tr>
+                            {% if summary.preview and summary.preview[0] %}
+                                {% for col in summary.preview[0].keys() %}
+                                    <th>{{ col }}</th>
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in summary.preview %}
+                            <tr>
+                                {% for col, val in row.items() %}
+                                    <td>{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

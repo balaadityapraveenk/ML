@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Home Dashboard - Placement Prediction Project{% endblock %}
+
+{% block content %}
+    <h2>Welcome to Placement Prediction Dashboard</h2>
+    <p>This ML web application guides you through loading datasets, cleaning and preprocessing variables, training predictive models, and running placement predictions.</p>
+
+    <h3 style="margin-top: 2rem;">Quick Access Options</h3>
+    <div class="dashboard-grid">
+        <a href="{{ url_for('data_loading') }}" class="dashboard-card">
+            <div class="card-icon">📂</div>
+            <h4>Data Loading</h4>
+            <p>Load the placement dataset, view descriptive metadata, duplicate stats, and browse original records.</p>
+        </a>
+
+        <a href="{{ url_for('preprocessing_route') }}" class="dashboard-card">
+            <div class="card-icon">⚙️</div>
+            <h4>Preprocessing</h4>
+            <p>Impute missing values, convert categorical text features to numeric labels, and standardize values.</p>
+        </a>
+
+        <a href="{{ url_for('eda_route') }}" class="dashboard-card">
+            <div class="card-icon">📊</div>
+            <h4>Exploratory Analysis</h4>
+            <p>Explore distributions, analyze categorical trends via charts, and view correlation heatmaps.</p>
+        </a>
+
+
+        <div class="dashboard-card disabled">
+            <div class="card-icon">🧠</div>
+            <h4>Model Training</h4>
+            <p>Select features, choose algorithms, run machine learning models, and analyze performance (coming soon).</p>
+        </div>
+
+        <div class="dashboard-card disabled">
+            <div class="card-icon">🎯</div>
+            <h4>Prediction</h4>
+            <p>Input candidate details and predict placement likelihood and estimated salary packages (coming soon).</p>
+        </div>
+    </div>
+{% endblock %}
