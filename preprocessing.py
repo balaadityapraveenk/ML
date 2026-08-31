@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from load_data import DATA_PATH
 
-PREPROCESSED_PATH = r"D:\SEM4\ML\Placement_Prediction\Data\placement_predict_preprocessed.csv"
+PREPROCESSED_PATH = r"/Programs/placement_predict_preprocessed.csv"
 
 def run_preprocessing(input_path: str = DATA_PATH, output_path: str = PREPROCESSED_PATH) -> dict:
     df = pd.read_csv(input_path)

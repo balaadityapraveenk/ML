@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-DATA_PATH = r"D:\SEM4\ML\Programs\placement_predict_50k Dataset.csv"
+DATA_PATH = r"/Placement_Prediction/placement_predict_50k Dataset.csv"
 
 def load_data(path: str = DATA_PATH) -> pd.DataFrame:
     if not os.path.exists(path):
@@ -51,4 +51,4 @@ def get_duplicate_count(path: str = DATA_PATH) -> int:
 
 if __name__ == "__main__":
     data = load_data()
-    print(get_data_summary(), "\n", get_duplicate_count())
+    print(get_data_summary(), "\n", get_duplicate_count())
