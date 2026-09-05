@@ -1,7 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from load_data import get_data_summary, get_duplicate_count
 from preprocessing import run_preprocessing
 from eda import get_eda_summary_data
+from LinearRegression import get_linear_regression_summary, predict_sample_salary
 
 
 app = Flask(__name__)
@@ -56,7 +57,6 @@ def preprocessing_route():
 
 @app.route("/eda")
 def eda_route():
-
     error = None
     summary = None
 
@@ -74,8 +74,37 @@ def eda_route():
         error=error
     )
 
+@app.route("/linear-regression", methods=["GET", "POST"])
+def linear_regression_route():
+    error = None
+    summary = None
+    predicted_salary = None
+    cgpa_input = None
+
+    if request.method == "POST":
+        try:
+            cgpa_input = float(request.form.get("cgpa", 0))
+            predicted_salary = round(predict_sample_salary(cgpa_input, model_type="simple"), 2)
+        except Exception as e:
+            error = f"Prediction error: {e}"
+
+    try:
+        summary = get_linear_regression_summary()
+    except Exception as e:
+        if not error:
+            error = f"Model execution error: {e}"
+
+    return render_template(
+        "linear_regression.html",
+        active="linear-regression",
+        summary=summary,
+        predicted_salary=predicted_salary,
+        cgpa_input=cgpa_input,
+        error=error
+    )
 
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 

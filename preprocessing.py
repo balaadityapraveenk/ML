@@ -2,7 +2,8 @@ import os
 import pandas as pd
 from load_data import DATA_PATH
 
-PREPROCESSED_PATH = r"/Programs/placement_predict_preprocessed.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PREPROCESSED_PATH = os.path.join(BASE_DIR, "Data", "placement_predict_preprocessed.csv")
 
 def run_preprocessing(input_path: str = DATA_PATH, output_path: str = PREPROCESSED_PATH) -> dict:
     df = pd.read_csv(input_path)

@@ -43,8 +43,10 @@
                 </a>
             </li>
 
-            <li class="menu-item disabled">
-                Model Training (coming soon)
+            <li>
+                <a href="{{ url_for('linear_regression_route') }}" class="menu-item {% if active == 'linear-regression' %}active{% endif %}">
+                    Linear Regression
+                </a>
             </li>
             <li class="menu-item disabled">
                 Prediction (coming soon)

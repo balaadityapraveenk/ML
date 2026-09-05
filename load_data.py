@@ -1,7 +1,8 @@
 import os
 import pandas as pd
 
-DATA_PATH = r"/Placement_Prediction/placement_predict_50k Dataset.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, "placement_predict_50k Dataset.csv")
 
 def load_data(path: str = DATA_PATH) -> pd.DataFrame:
     if not os.path.exists(path):

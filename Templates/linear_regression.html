@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Linear Regression - Placement Prediction Project{% endblock %}
+
+{% block content %}
+    <h2>Linear Regression Analysis & Training</h2>
+
+    {% if error %}
+        <div class="error" style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <!-- Live Prediction Form -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass-hover); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>Predict Salary Package</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Enter a standardized CGPA score to test the trained Linear Regression model in real time.</p>
+        <form method="POST" action="{{ url_for('linear_regression_route') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+                <label for="cgpa" style="display: block; font-size: 0.9rem; margin-bottom: 0.4rem; color: var(--text-secondary);">Student CGPA (Standardized / Z-score)</label>
+                <input type="number" step="0.01" id="cgpa" name="cgpa" value="{{ cgpa_input if cgpa_input is not none else '0.50' }}" required style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 1rem; border-radius: 8px; font-size: 1rem; min-width: 220px;">
+            </div>
+            <button type="submit" style="background: var(--accent-gradient); color: #fff; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Predict Package
+            </button>
+        </form>
+
+        {% if predicted_salary is not none %}
+            <div style="margin-top: 1.2rem; padding: 1rem 1.2rem; background: var(--success-bg); border: 1px solid var(--success-border); border-radius: 8px; display: inline-block;">
+                <span style="color: var(--text-secondary);">Predicted Salary for CGPA ({{ cgpa_input }}):</span>
+                <strong style="color: var(--success-text); font-size: 1.25rem; margin-left: 0.5rem;">₹ {{ predicted_salary }} LPA</strong>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if summary %}
+        <!-- Model Performance Metrics Comparison -->
+        <div class="dashboard-section" style="margin-bottom: 2rem;">
+            <h3>Model Performance Metrics</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.2rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Simple LR R² Score</div>
+                    <div style="font-size: 1.7rem; font-weight: 700; color: #60a5fa; margin-top: 0.2rem;">{{ summary.simple.metrics.R2 }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">Adj R²: {{ summary.simple.metrics.Adjusted_R2 }}</div>
+                </div>
+
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.2rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Multiple LR R² Score</div>
+                    <div style="font-size: 1.7rem; font-weight: 700; color: var(--success-text); margin-top: 0.2rem;">{{ summary.multiple.metrics.R2 }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">Adj R²: {{ summary.multiple.metrics.Adjusted_R2 }}</div>
+                </div>
+
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.2rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Simple LR MAE / RMSE</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--warning-text); margin-top: 0.4rem;">{{ summary.simple.metrics.MAE }} / {{ summary.simple.metrics.RMSE }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">MSE: {{ summary.simple.metrics.MSE }}</div>
+                </div>
+
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.2rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Multiple LR MAE / RMSE</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: #a855f7; margin-top: 0.4rem;">{{ summary.multiple.metrics.MAE }} / {{ summary.multiple.metrics.RMSE }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">MSE: {{ summary.multiple.metrics.MSE }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mathematical Equation & Parameters -->
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h3>Fitted Simple Regression Model</h3>
+            <div style="margin-top: 0.8rem; background: rgba(0,0,0,0.25); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 1.1rem; color: #38bdf8;">
+                {{ summary.simple.formula }}
+            </div>
+            <div style="display: flex; gap: 2rem; margin-top: 1rem; color: var(--text-secondary); font-size: 0.95rem;">
+                <div><strong>Slope (m):</strong> <span style="color: #fff;">{{ summary.simple.slope }}</span></div>
+                <div><strong>Intercept (c):</strong> <span style="color: #fff;">{{ summary.simple.intercept }}</span></div>
+                <div><strong>Training Samples:</strong> <span style="color: #fff;">{{ summary.simple.train_samples }}</span></div>
+                <div><strong>Test Samples:</strong> <span style="color: #fff;">{{ summary.simple.test_samples }}</span></div>
+            </div>
+        </div>
+
+        <!-- Visualizations Grid -->
+        <div class="dashboard-section" style="margin-bottom: 2rem;">
+            <h3>Regression Visualizations</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: var(--text-secondary);">Simple Linear Regression Fit</h4>
+                    <img src="{{ url_for('static', filename='simple_lr_fit.png') }}" alt="Simple Linear Regression Fit" style="max-width: 100%; border-radius: 8px;">
+                </div>
+
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: var(--text-secondary);">Multiple LR Top Feature Weights</h4>
+                    <img src="{{ url_for('static', filename='multiple_lr_coefficients.png') }}" alt="Feature Coefficients" style="max-width: 100%; border-radius: 8px;">
+                </div>
+
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: var(--text-secondary);">Multiple LR: Actual vs Predicted</h4>
+                    <img src="{{ url_for('static', filename='multiple_lr_actual_vs_pred.png') }}" alt="Actual vs Predicted" style="max-width: 100%; border-radius: 8px;">
+                </div>
+
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: var(--text-secondary);">Multiple LR: Residuals Distribution</h4>
+                    <img src="{{ url_for('static', filename='multiple_lr_residuals.png') }}" alt="Residuals Distribution" style="max-width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Predictions Comparison Table -->
+        <div class="dashboard-section" style="margin-bottom: 2rem;">
+            <h3>Sample Actual vs. Predicted Salary Comparison</h3>
+            <div style="overflow-x: auto; margin-top: 1rem;">
+                <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(255,255,255,0.05);">
+                            <th style="padding: 0.75rem; text-align: left;">CGPA (Z-score)</th>
+                            <th style="padding: 0.75rem; text-align: left;">Actual Salary (LPA)</th>
+                            <th style="padding: 0.75rem; text-align: left;">Predicted Salary (LPA)</th>
+                            <th style="padding: 0.75rem; text-align: left;">Residual (Error)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in summary.simple.comparison %}
+                            <tr style="border-bottom: 1px solid var(--border-glass);">
+                                <td style="padding: 0.75rem;">{{ row.CGPA }}</td>
+                                <td style="padding: 0.75rem;"><strong>₹ {{ row['Actual Salary'] }}</strong></td>
+                                <td style="padding: 0.75rem; color: #60a5fa;"><strong>₹ {{ row['Predicted Salary'] }}</strong></td>
+                                <td style="padding: 0.75rem; color: {% if row['Residual (Error)'] < 0 %}var(--danger-text){% else %}var(--success-text){% endif %};">
+                                    {{ row['Residual (Error)'] }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
