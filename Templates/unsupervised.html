@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Unsupervised Learning - Placement Prediction{% endblock %}
+
+{% block content %}
+    <h2>Unsupervised Learning & Structure Discovery</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Discovering latent student personas, geometric manifold topology, and academic anomalies without labels using K-Means, 
+        Hierarchical Ward Clustering, DBSCAN, PCA, t-SNE, UMAP, and Isolation Forests.
+    </p>
+
+    <!-- 1. Clustering Scorecard -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: #38bdf8; margin-bottom: 0.5rem;">K-Means Personas (k=3)</h4>
+            {% if summary and summary.kmeans %}
+                <div style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.8rem;">Optimal clusters selected via Silhouette & Elbow analysis.</div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    {% for cluster_id, count in summary.kmeans.cluster_distribution.items() %}
+                        <div style="background: rgba(0,0,0,0.3); padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.85rem;">
+                            <strong>Cohort {{ cluster_id }}:</strong> <span style="color: #60a5fa;">{{ count }} students</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: #a855f7; margin-bottom: 0.5rem;">DBSCAN Density Clustering</h4>
+            {% if summary and summary.dbscan %}
+                <div style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.8rem;">Parameters: \(\epsilon=3.5, \text{MinPts}=15\)</div>
+                <ul style="list-style: none; font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <li><strong>Dense Clusters Identified:</strong> {{ summary.dbscan.clusters_found }}</li>
+                    <li><strong>Sparse Noise Points:</strong> <span style="color: #f87171;">{{ summary.dbscan.noise_points_flagged }} ({{ summary.dbscan.noise_percentage }}%)</span></li>
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: #f43f5e; margin-bottom: 0.5rem;">Isolation Forest Anomalies</h4>
+            {% if summary and summary.anomaly_detection %}
+                <div style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.8rem;">Contamination: 3.5% (Partition path tree depth)</div>
+                <ul style="list-style: none; font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <li><strong>Flagged Anomalies:</strong> <span style="color: #f87171;">{{ summary.anomaly_detection.detected_anomalies }}</span></li>
+                    <li><strong>Ground Truth Anomalies:</strong> {{ summary.anomaly_detection.ground_truth_anomalies }}</li>
+                    <li><strong>Detection Concordance:</strong> True Positives Detected via Unsupervised Trees</li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 2. Visualizations -->
+    <div class="dashboard-section" style="margin-bottom: 2rem;">
+        <h3>Unsupervised Visualizations</h3>
+        <div style="display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem;">
+            <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                <h4 style="margin-bottom: 0.75rem; text-align: left;">Dimensionality Reduction: PCA vs t-SNE vs UMAP (Latent Student Space)</h4>
+                <img src="{{ url_for('static', filename='unsupervised_dim_reduction.png') }}" alt="Dimensionality Reduction Comparison" style="max-width: 100%; border-radius: 8px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">K-Means Elbow & Silhouette Optimization</h4>
+                    <img src="{{ url_for('static', filename='unsupervised_kmeans_elbow.png') }}" alt="K-Means Elbow" style="max-width: 100%; border-radius: 8px;">
+                </div>
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">Isolation Forest Anomaly Scatter (PCA Projection)</h4>
+                    <img src="{{ url_for('static', filename='unsupervised_anomaly_detection.png') }}" alt="Anomaly Detection" style="max-width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                <h4 style="margin-bottom: 0.75rem; text-align: left;">Hierarchical Clustering: Ward Linkage Dendrogram</h4>
+                <img src="{{ url_for('static', filename='unsupervised_dendrogram.png') }}" alt="Hierarchical Dendrogram" style="max-width: 100%; border-radius: 8px;">
+            </div>
+        </div>
+    </div>
+{% endblock %}

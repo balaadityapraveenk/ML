@@ -3,53 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Placement Prediction Project{% endblock %}</title>
+    <title>{% block title %}Placement Prediction ML System{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-
+    <style>
+        .sidebar ul li a.active {
+            background: var(--accent-gradient);
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+        .metric-badge {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #818cf8;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .code-block {
+            background: #090d16;
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.88rem;
+            color: #38bdf8;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 <body>
 <div class="bg-glow-blob blob-1"></div>
 <div class="bg-glow-blob blob-2"></div>
 
 <header class="topbar">
-
-    <h1><a href="{{ url_for('index') }}">Placement Prediction Project</a></h1>
+    <h1><a href="{{ url_for('index') }}" style="text-decoration: none; color: inherit;">🎓 Placement Prediction ML System</a></h1>
+    <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.8rem;">
+        <span class="metric-badge">Production v1.0.0</span>
+        <span style="color: #34d399;">● Online</span>
+    </div>
 </header>
 
 <div class="layout">
     <nav class="sidebar">
-        <div class="sidebar-title">Pipeline Steps</div>
+        <div class="sidebar-title">ML Pipeline Lifecycle</div>
         <ul>
-
             <li>
                 <a href="{{ url_for('index') }}" class="menu-item {% if active == 'none' %}active{% endif %}">
-                    Home Dashboard
+                    🏠 Home Dashboard
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('data_loading') }}" class="menu-item {% if active == 'data-loading' %}active{% endif %}">
-                    Data Loading
+                    📂 1. Data Loading
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('preprocessing_route') }}" class="menu-item {% if active == 'preprocessing' %}active{% endif %}">
-                    Preprocessing
+                    ⚙️ 2. Preprocessing
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('eda_route') }}" class="menu-item {% if active == 'eda' %}active{% endif %}">
-                    Exploratory Analysis
+                    📊 3. Exploratory Analysis
                 </a>
             </li>
-
             <li>
-                <a href="{{ url_for('linear_regression_route') }}" class="menu-item {% if active == 'linear-regression' %}active{% endif %}">
-                    Linear Regression
+                <a href="{{ url_for('linear_models_route') }}" class="menu-item {% if active == 'linear-models' %}active{% endif %}">
+                    📈 4. Linear Supervised Models
                 </a>
             </li>
-            <li class="menu-item disabled">
-                Prediction (coming soon)
+            <li>
+                <a href="{{ url_for('tree_models_route') }}" class="menu-item {% if active == 'tree-models' %}active{% endif %}">
+                    🌲 5. Tree-Based Models
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('unsupervised_route') }}" class="menu-item {% if active == 'unsupervised' %}active{% endif %}">
+                    🔍 6. Unsupervised Learning
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('evaluation_route') }}" class="menu-item {% if active == 'evaluation' %}active{% endif %}">
+                    🎯 7. Evaluation & Tuning
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('ml_engineering_route') }}" class="menu-item {% if active == 'ml-engineering' %}active{% endif %}">
+                    🛠️ 8. ML Engineering & REST API
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('lifecycle_tracer_route') }}" class="menu-item {% if active == 'lifecycle-tracer' %}active{% endif %}">
+                    🔄 9. Lifecycle Tracer
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('predict_route') }}" class="menu-item {% if active == 'predict' %}active{% endif %}" style="border: 1px solid rgba(99, 102, 241, 0.4);">
+                    🚀 Live Predictor
+                </a>
             </li>
         </ul>
     </nav>

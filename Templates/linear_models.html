@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Linear Supervised Models - Placement Prediction{% endblock %}
+
+{% block content %}
+    <h2>Linear Supervised-Learning Models & Theory</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Comprehensive implementation and theoretical reasoning of linear models: Ordinary Least Squares, Ridge (L2), Lasso (L1), 
+        Elastic Net (L1+L2), Binary Logistic Regression, and Multinomial Logistic Regression.
+    </p>
+
+    {% if error %}
+        <div style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <!-- 1. Regression Metrics Table -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>1. Linear Regression Family (Salary Package Prediction)</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+            Evaluating penalization effects on multicollinear academic features predicting continuous Salary Package (in LPA).
+        </p>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-glass); color: var(--text-secondary);">
+                        <th style="padding: 0.75rem;">Model</th>
+                        <th style="padding: 0.75rem;">Penalization</th>
+                        <th style="padding: 0.75rem;">R² Score</th>
+                        <th style="padding: 0.75rem;">Adj R²</th>
+                        <th style="padding: 0.75rem;">RMSE</th>
+                        <th style="padding: 0.75rem;">MAE</th>
+                        <th style="padding: 0.75rem;">Zeroed Features</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if summary and summary.regression_results %}
+                        {% for name, m in summary.regression_results.items() %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                            <td style="padding: 0.75rem; font-weight: 600; color: #f8fafc;">{{ name }}</td>
+                            <td style="padding: 0.75rem; color: #818cf8;">
+                                {% if "Ridge" in name %}L2 (||\beta||_2^2)
+                                {% elif "Lasso" in name %}L1 (||\beta||_1)
+                                {% elif "Elastic" in name %}L1 + L2
+                                {% else %}None (OLS)
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.75rem; color: var(--success-text); font-weight: 700;">{{ m.R2 }}</td>
+                            <td style="padding: 0.75rem;">{{ m.Adjusted_R2 }}</td>
+                            <td style="padding: 0.75rem; color: var(--warning-text);">{{ m.RMSE }}</td>
+                            <td style="padding: 0.75rem;">{{ m.MAE }}</td>
+                            <td style="padding: 0.75rem;">
+                                {% if m.Zero_Coefficients > 0 %}
+                                    <span class="metric-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">{{ m.Zero_Coefficients }} features</span>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">0</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. Classification Metrics Table -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>2. Logistic Regression Family (Placement & Tier Classification)</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.25rem;">
+                <h4 style="color: #60a5fa; margin-bottom: 0.5rem;">Binary Logistic Regression</h4>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Target: PlacementStatus (0 = Unplaced, 1 = Placed) using Sigmoid link function: \(\sigma(z) = \frac{1}{1 + e^{-z}}\)</div>
+                {% if summary and summary.classification_results and summary.classification_results["Binary Logistic Regression (Placed vs Not Placed)"] %}
+                    {% set bin = summary.classification_results["Binary Logistic Regression (Placed vs Not Placed)"] %}
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+                        <li style="display: flex; justify-content: space-between;"><span>Accuracy:</span> <strong style="color: #34d399;">{{ bin.Accuracy }}</strong></li>
+                        <li style="display: flex; justify-content: space-between;"><span>Precision:</span> <strong>{{ bin.Precision }}</strong></li>
+                        <li style="display: flex; justify-content: space-between;"><span>Recall:</span> <strong>{{ bin.Recall }}</strong></li>
+                        <li style="display: flex; justify-content: space-between;"><span>F1-Score:</span> <strong>{{ bin.F1_Score }}</strong></li>
+                        <li style="display: flex; justify-content: space-between;"><span>ROC-AUC:</span> <strong style="color: #818cf8;">{{ bin.ROC_AUC }}</strong></li>
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.25rem;">
+                <h4 style="color: #c084fc; margin-bottom: 0.5rem;">Multinomial Logistic Regression</h4>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Target: Multi-Tier Placement (3 Categories) using Softmax link function: \(P(y=k) = \frac{e^{z_k}}{\sum_j e^{z_j}}\)</div>
+                {% if summary and summary.classification_results and summary.classification_results["Multinomial Logistic Regression (Multi-Tier Categorization)"] %}
+                    {% set mul = summary.classification_results["Multinomial Logistic Regression (Multi-Tier Categorization)"] %}
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+                        <li style="display: flex; justify-content: space-between;"><span>Accuracy:</span> <strong style="color: #34d399;">{{ mul.Accuracy }}</strong></li>
+                        <li style="display: flex; justify-content: space-between;"><span>Weighted F1-Score:</span> <strong>{{ mul.Weighted_F1 }}</strong></li>
+                        <li style="display: flex; justify-content: space-between;"><span>Classes Handled:</span> <strong>{{ mul.Num_Classes }} Tiers</strong></li>
+                        <li style="display: flex; justify-content: space-between;"><span>Optimization Solver:</span> <strong>L-BFGS (Cross-Entropy Loss)</strong></li>
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Theoretical Reasoning: Regularisation, Bias-Variance, Feature Scaling -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>3. Theoretical Reasoning & Empirical Analysis</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+            <div>
+                <h4 style="color: #f59e0b; margin-bottom: 0.4rem;">Regularisation (L1 vs L2)</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                    • <strong>Ridge (L2)</strong> shrinks correlated coefficients smoothly toward zero but retains all features, tackling multicollinearity without dropping information.<br>
+                    • <strong>Lasso (L1)</strong> produces sparse models by zeroing out 15 redundant features at diamond corners of the L1 penalty ball, acting as embedded feature selection.<br>
+                    • <strong>Elastic Net</strong> combines both to group correlated predictors while maintaining sparsity.
+                </p>
+            </div>
+            <div>
+                <h4 style="color: #38bdf8; margin-bottom: 0.4rem;">Bias-Variance Trade-Off</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                    As regularisation hyperparameter \(\alpha\) increases from 0.01 to 1000:<br>
+                    • Training error increases monotonically (higher bias).<br>
+                    • Test error initially decreases due to reduced variance before rising as underfitting dominates.<br>
+                    • The optimal \(\alpha\) minimizes total generalization error on unobserved test splits.
+                </p>
+            </div>
+            <div>
+                <h4 style="color: #10b981; margin-bottom: 0.4rem;">Feature Scaling Impact</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                    Without StandardScaler (\(\mu=0, \sigma=1\)), features with large scales (like CodingTestScore up to 100) receive disproportionate shrinkage penalty compared to CGPA (0–10).<br>
+                    Standardizing features ensures balanced gradient updates and equitable regularization penalties across all predictors.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Visualizations -->
+    <div class="dashboard-section" style="margin-bottom: 2rem;">
+        <h3>Diagnostic Visualizations</h3>
+        <div style="display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem;">
+            <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                <h4 style="margin-bottom: 0.75rem; text-align: left;">Regularisation Paths & Bias-Variance Curve</h4>
+                <img src="{{ url_for('static', filename='linear_regularisation_analysis.png') }}" alt="Regularisation Analysis" style="max-width: 100%; border-radius: 8px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">Model Performance (R² Score)</h4>
+                    <img src="{{ url_for('static', filename='linear_models_comparison.png') }}" alt="Linear Models Comparison" style="max-width: 100%; border-radius: 8px;">
+                </div>
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">Top 10 Feature Coefficients Shrinkage</h4>
+                    <img src="{{ url_for('static', filename='linear_coefficients_regularisation.png') }}" alt="Coefficients Shrinkage" style="max-width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

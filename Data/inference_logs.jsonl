@@ -1,0 +1,4 @@
+{"timestamp": "2026-10-08T21:57:29.420369", "latency_ms": 97.55, "prediction": 1, "probability": 0.9869, "salary": 21.53}
+{"timestamp": "2026-10-08T21:57:47.228452", "latency_ms": 175.58, "prediction": 1, "probability": 0.9869, "salary": 21.53}
+{"timestamp": "2026-10-08T22:03:26.524014", "latency_ms": 104.43, "prediction": 1, "probability": 0.9869, "salary": 21.53}
+{"timestamp": "2026-10-08T22:03:27.047846", "latency_ms": 97.84, "prediction": 1, "probability": 0.9869, "salary": 21.53}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}End-to-End Lifecycle Tracer - Placement Prediction{% endblock %}
+
+{% block content %}
+    <h2>End-to-End ML System Lifecycle & Request Tracer</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Complete trace of an individual inference request backwards through every preceding lifecycle stage: 
+        <strong>Monitoring → Deployment → Evaluation → Training → Features → Data Provenance</strong>.
+    </p>
+
+    <!-- Request Form & Quick Trigger -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>Trace a Prediction Request</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.2rem;">
+            Submit a candidate profile to observe its complete end-to-end lineage backwards to the raw 50,000-record dataset.
+        </p>
+
+        <form method="POST" action="{{ url_for('lifecycle_tracer_route') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Candidate CGPA</label>
+                <input type="number" step="0.01" name="CGPA" value="{{ request_input.CGPA if request_input else '8.9' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.5rem 0.8rem; border-radius: 6px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Coding Test Score</label>
+                <input type="number" step="1" name="CodingTestScore" value="{{ request_input.CodingTestScore if request_input else '92' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.5rem 0.8rem; border-radius: 6px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Aptitude Score</label>
+                <input type="number" step="1" name="AptitudeTestScore" value="{{ request_input.AptitudeTestScore if request_input else '85' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.5rem 0.8rem; border-radius: 6px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Internships Count</label>
+                <input type="number" step="1" name="Internships" value="{{ request_input.Internships if request_input else '2' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.5rem 0.8rem; border-radius: 6px;">
+            </div>
+            <div>
+                <button type="submit" style="background: var(--accent-gradient); color: #fff; border: none; padding: 0.6rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%;">
+                    Execute Lifecycle Trace
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if trace %}
+        <!-- Prediction Outcome Banner -->
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Request ID: <code>{{ trace.trace_id }}</code> | Timestamp: {{ trace.timestamp[:19] }}</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">
+                    Status: {{ trace.prediction_summary.outcome }} ({{ trace.prediction_summary.probability }})
+                </div>
+            </div>
+            <div style="display: flex; gap: 1.5rem; font-size: 0.95rem;">
+                <div>
+                    <span style="color: var(--text-secondary);">Estimated Package:</span>
+                    <strong style="color: #60a5fa; margin-left: 0.4rem;">{{ trace.prediction_summary.estimated_salary }}</strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-secondary);">Serving Latency:</span>
+                    <strong style="color: #f59e0b; margin-left: 0.4rem;">{{ trace.prediction_summary.inference_latency }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reverse Lifecycle Traceback Timeline -->
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h3>Reverse Lifecycle Lineage Walk (Deployed → Origin)</h3>
+            <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem; position: relative; padding-left: 1.5rem; border-left: 2px solid rgba(99, 102, 241, 0.4);">
+                {% for item in trace.lifecycle_traceback %}
+                    <div style="position: relative;">
+                        <div style="position: absolute; left: -2.05rem; top: 0.2rem; background: #6366f1; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                            {{ item.step }}
+                        </div>
+                        <h4 style="color: #f8fafc; margin-bottom: 0.3rem;">Stage {{ item.step }}: {{ item.stage }}</h4>
+                        
+                        {% if item.step == 6 %}
+                            <p style="font-size: 0.88rem; color: var(--text-secondary);">{{ item.finding }}</p>
+                        {% elif item.step == 5 %}
+                            <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Serving via Model: <code>{{ item.model_id }}</code> (v{{ item.version }}) | Endpoint: <code>{{ item.endpoint }}</code><br>
+                                Skew Guard: <span style="color: #34d399;">{{ item.skew_avoidance_status }}</span>
+                            </p>
+                        {% elif item.step == 4 %}
+                            <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Pre-deployment validation gate: <strong style="color: #34d399;">{{ item.gate_approval }}</strong><br>
+                                Verification Benchmarks: Test F1 = <strong>{{ item.validation_f1 }}</strong> | ROC-AUC = <strong>{{ item.validation_roc_auc }}</strong>
+                            </p>
+                        {% elif item.step == 3 %}
+                            <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Trained Model Architecture: <strong>{{ item.algorithm }}</strong><br>
+                                Optimization Objective: {{ item.objective }} on <strong>{{ item.training_sample_count }}</strong> balanced records.
+                            </p>
+                        {% elif item.step == 2 %}
+                            <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Feature store mappings:
+                                {% for t in item.transformations %}
+                                    <br>• {{ t }}
+                                {% endfor %}
+                            </p>
+                        {% elif item.step == 1 %}
+                            <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                                Training Source Origin: <code>{{ item.dataset }}</code><br>
+                                Cryptographic Data Hash: <code>{{ item.data_hash }}</code><br>
+                                Lineage: {{ item.provenance }}
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Overview of All 6 Lifecycle Stages -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>End-to-End ML System Lifecycle Overview</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 1rem;">
+            {% for s in lifecycle_overview %}
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); border-radius: 8px; padding: 1rem;">
+                    <h5 style="color: #818cf8; font-size: 0.95rem; margin-bottom: 0.4rem;">{{ s.stage }}</h5>
+                    <p style="font-size: 0.83rem; color: var(--text-secondary); line-height: 1.4;">
+                        {% for k, v in s.items() %}
+                            {% if k != 'stage' and k != 'test_metrics' and k != 'chosen_hyperparameters' %}
+                                <strong>{{ k.replace('_', ' ').title() }}:</strong> {{ v }}<br>
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

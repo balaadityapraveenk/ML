@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}ML Engineering & REST Serving - Placement Prediction{% endblock %}
+
+{% block content %}
+    <h2>Production ML Engineering, Serving & Monitoring</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Production-style infrastructure implementation: Feature Store (offline/online), zero training-serving skew pipeline, 
+        model packaging and versioning, REST API microservice, and statistical drift monitoring (KS-Test & PSI).
+    </p>
+
+    <!-- 1. Architectural Highlights Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.4rem; margin-bottom: 0.4rem;">🗄️ Feature Store</div>
+            <h4 style="color: #38bdf8; margin-bottom: 0.5rem;">Entity Key: StudentID</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                Dual-tier feature store providing offline historical slices for model retraining and sub-millisecond online key-value retrieval for real-time inference.
+            </p>
+        </div>
+
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.4rem; margin-bottom: 0.4rem;">🛡️ Skew Prevention</div>
+            <h4 style="color: #34d399; margin-bottom: 0.5rem;">Zero-Skew Pipeline</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                Transforms (imputation, one-hot encoding, standard scaling) are serialized inside a single Scikit-Learn <code>ColumnTransformer</code> pipeline artifact to guarantee identical inference math.
+            </p>
+        </div>
+
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.4rem; margin-bottom: 0.4rem;">📦 Model Packaging</div>
+            <h4 style="color: #c084fc; margin-bottom: 0.5rem;">Packaged Bundle v1.0.0</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                Standardized artifact package containing <code>placement_pipeline.joblib</code>, cryptographic data hash, feature schemas, and metadata manifest.
+            </p>
+        </div>
+
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-size: 1.4rem; margin-bottom: 0.4rem;">📡 Drift Monitoring</div>
+            <h4 style="color: #f59e0b; margin-bottom: 0.5rem;">KS-Test & PSI Guard</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                Continuously tracks data drift via 2-sample Kolmogorov-Smirnov test and Population Stability Index (PSI threshold = 0.20) to detect distribution shifts.
+            </p>
+        </div>
+    </div>
+
+    <!-- 2. REST API Documentation -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>REST-Based Serving Endpoints</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+            Production endpoints available on this service for external client consumption and automated pipelines:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: 8px; padding: 1rem;">
+                <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="background: #10b981; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;">POST</span>
+                    <strong style="color: #f8fafc; font-family: monospace;">/api/v1/predict/placement</strong>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Single or batch placement prediction & confidence</span>
+                </div>
+                <div class="code-block">curl -X POST http://localhost:5000/api/v1/predict/placement -H "Content-Type: application/json" -d '{"CGPA": 8.7, "CodingTestScore": 92, "AttendancePercent": 88, ...}'</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: 8px; padding: 1rem;">
+                <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="background: #10b981; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;">POST</span>
+                    <strong style="color: #f8fafc; font-family: monospace;">/api/v1/predict/salary</strong>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Continuous regression package estimator</span>
+                </div>
+                <div class="code-block">curl -X POST http://localhost:5000/api/v1/predict/salary -H "Content-Type: application/json" -d '{"CGPA": 9.1, "Projects": 4, ...}'</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: 8px; padding: 1rem;">
+                <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="background: #3b82f6; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;">GET</span>
+                    <strong style="color: #f8fafc; font-family: monospace;">/api/v1/features/&lt;student_id&gt;</strong>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Online Feature Store lookup by StudentID</span>
+                </div>
+                <div class="code-block">curl -X GET http://localhost:5000/api/v1/features/101</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: 8px; padding: 1rem;">
+                <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="background: #3b82f6; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;">GET</span>
+                    <strong style="color: #f8fafc; font-family: monospace;">/api/v1/model/metadata</strong>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Inspect active model version and manifest</span>
+                </div>
+                <div class="code-block">curl -X GET http://localhost:5000/api/v1/model/metadata</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Live Statistical Drift Guard -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>Statistical Data Drift Report</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+            Evaluated on inference streams vs training baseline. PSI values &lt; 0.10 signify distribution stability; &gt; 0.20 trigger automated model retraining.
+        </p>
+
+        {% if drift_report %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-glass); color: var(--text-secondary);">
+                            <th style="padding: 0.75rem;">Monitored Feature</th>
+                            <th style="padding: 0.75rem;">KS-Statistic</th>
+                            <th style="padding: 0.75rem;">KS p-value</th>
+                            <th style="padding: 0.75rem;">Population Stability Index (PSI)</th>
+                            <th style="padding: 0.75rem;">Drift Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feature, stats in drift_report.items() %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                            <td style="padding: 0.75rem; font-weight: 600; color: #f8fafc;">{{ feature }}</td>
+                            <td style="padding: 0.75rem;">{{ stats.ks_statistic }}</td>
+                            <td style="padding: 0.75rem;">{{ stats.ks_pvalue }}</td>
+                            <td style="padding: 0.75rem; font-weight: 700; color: #60a5fa;">{{ stats.psi }}</td>
+                            <td style="padding: 0.75rem;">
+                                {% if "Significant" in stats.status %}
+                                    <span style="color: #ef4444; font-weight: 700;">⚠️ {{ stats.status }}</span>
+                                {% else %}
+                                    <span style="color: #34d399; font-weight: 600;">✓ {{ stats.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

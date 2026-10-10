@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Model Evaluation & Tuning - Placement Prediction{% endblock %}
+
+{% block content %}
+    <h2>Model Performance Evaluation, Validation & Calibration</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Rigorous validation methodology featuring 3-way train/validation/test splits, 5-Fold Stratified Cross-Validation, 
+        PR-AUC analysis, Brier score probability calibration, and Hyperparameter Optimization comparison (Grid vs Random vs Bayesian).
+    </p>
+
+    <!-- 1. Splits & 5-Fold Cross Validation -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: #60a5fa; margin-bottom: 0.5rem;">Train / Validation / Test Protocol</h4>
+            {% if summary and summary.split_summary %}
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Independent holdout splits to guard against hyperparameter overfitting.</div>
+                <ul style="list-style: none; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li style="display: flex; justify-content: space-between;"><span>Train Set (70%):</span> <strong>{{ summary.split_summary.Train_Samples }} samples</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>Validation Set (15%):</span> <strong>{{ summary.split_summary.Validation_Samples }} samples</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>Holdout Test Set (15%):</span> <strong>{{ summary.split_summary.Test_Samples }} samples</strong></li>
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: #34d399; margin-bottom: 0.5rem;">Stratified 5-Fold Cross-Validation</h4>
+            {% if summary and summary.cross_validation %}
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">K-Fold resampling across folds (Mean ± Standard Deviation):</div>
+                <ul style="list-style: none; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li style="display: flex; justify-content: space-between;"><span>CV Accuracy:</span> <strong style="color: #34d399;">{{ summary.cross_validation.Accuracy }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>CV F1-Score:</span> <strong>{{ summary.cross_validation.F1_Score }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>CV ROC-AUC:</span> <strong style="color: #818cf8;">{{ summary.cross_validation.ROC_AUC }}</strong></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 2. Test Set Metrics & Calibration -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: #f59e0b; margin-bottom: 0.5rem;">Classification & PR-AUC Metrics</h4>
+            {% if summary and summary.classification_metrics %}
+                <ul style="list-style: none; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li style="display: flex; justify-content: space-between;"><span>Accuracy:</span> <strong>{{ summary.classification_metrics.Accuracy }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>Precision / Recall:</span> <strong>{{ summary.classification_metrics.Precision }} / {{ summary.classification_metrics.Recall }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>F1-Score:</span> <strong style="color: #34d399;">{{ summary.classification_metrics.F1_Score }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>ROC-AUC:</span> <strong style="color: #818cf8;">{{ summary.classification_metrics.ROC_AUC }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>PR-AUC (Precision-Recall Area):</span> <strong style="color: #10b981;">{{ summary.classification_metrics.PR_AUC }}</strong></li>
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: #ec4899; margin-bottom: 0.5rem;">Probability Calibration & Brier Score</h4>
+            {% if summary and summary.calibration %}
+                <ul style="list-style: none; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li style="display: flex; justify-content: space-between;"><span>Uncalibrated Brier Score:</span> <strong style="color: #f87171;">{{ summary.calibration.Uncalibrated_Brier_Score }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>Platt Sigmoid Brier Score:</span> <strong>{{ summary.calibration.Platt_Sigmoid_Brier_Score }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>Isotonic Brier Score:</span> <strong style="color: #34d399;">{{ summary.calibration.Isotonic_Brier_Score }}</strong></li>
+                    <li style="display: flex; justify-content: space-between;"><span>Best Calibration:</span> <span class="metric-badge">{{ summary.calibration.Best_Calibrated_Model }}</span></li>
+                </ul>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.6rem;">{{ summary.calibration.Explanation }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 3. Hyperparameter Search Benchmark -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>3. Hyperparameter Tuning Paradigm Comparison</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+            Comparing Exhaustive Grid Search, Randomized Distribution Search, and Sequential Bayesian Optimization.
+        </p>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-glass); color: var(--text-secondary);">
+                        <th style="padding: 0.75rem;">Search Algorithm</th>
+                        <th style="padding: 0.75rem;">Runtime (s)</th>
+                        <th style="padding: 0.75rem;">Best Validation F1</th>
+                        <th style="padding: 0.75rem;">Best Discovered Configuration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if summary and summary.hyperparameter_search %}
+                        {% for method, data in summary.hyperparameter_search.items() %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                            <td style="padding: 0.75rem; font-weight: 600; color: #f8fafc;">{{ method }}</td>
+                            <td style="padding: 0.75rem; color: #60a5fa;">{{ data.Time_Seconds }} s</td>
+                            <td style="padding: 0.75rem; color: var(--success-text); font-weight: 700;">{{ data.Best_Score_F1 }}</td>
+                            <td style="padding: 0.75rem; font-family: monospace; font-size: 0.85rem; color: #cbd5e1;">{{ data.Best_Params }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4. Visualizations -->
+    <div class="dashboard-section" style="margin-bottom: 2rem;">
+        <h3>Evaluation Visualizations</h3>
+        <div style="display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">ROC Curve & Precision-Recall (PR-AUC)</h4>
+                    <img src="{{ url_for('static', filename='eval_roc_pr_curves.png') }}" alt="ROC and PR Curves" style="max-width: 100%; border-radius: 8px;">
+                </div>
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">Calibration Reliability Diagram</h4>
+                    <img src="{{ url_for('static', filename='eval_calibration_curve.png') }}" alt="Calibration Diagram" style="max-width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                <h4 style="margin-bottom: 0.75rem; text-align: left;">Hyperparameter Search Comparison (Score vs Runtime)</h4>
+                <img src="{{ url_for('static', filename='eval_hyperparameter_comparison.png') }}" alt="Hyperparameter Comparison" style="max-width: 100%; border-radius: 8px;">
+            </div>
+        </div>
+    </div>
+{% endblock %}

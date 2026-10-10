@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Live Placement Predictor - Production Serving{% endblock %}
+
+{% block content %}
+    <h2>Live Production Placement & Salary Predictor</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Powered by the production-deployed skew-free pipeline. Enter candidate academic, technical, and interview parameters 
+        for instant real-time inference.
+    </p>
+
+    {% if result %}
+        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Prediction Status</div>
+                <div style="font-size: 2rem; font-weight: 800; color: {% if result.placement_status == 1 %}#34d399{% else %}#f87171{% endif %}; margin-top: 0.2rem;">
+                    {% if result.placement_status == 1 %}LIKELY TO BE PLACED{% else %}UNLIKELY TO BE PLACED{% endif %}
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.4rem;">
+                    Placement Likelihood: <strong style="color: #f8fafc;">{{ (result.placement_probability * 100) | round(1) }}%</strong> 
+                    | Confidence: <span class="metric-badge">{{ result.confidence_level }}</span>
+                </div>
+            </div>
+
+            <div style="text-align: right;">
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Estimated Salary Package</div>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #60a5fa; margin-top: 0.2rem;">
+                    ₹ {{ result.predicted_salary_lpa }} LPA
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">
+                    Serving Latency: {{ latency }} ms (Model: {{ model_version }})
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.75rem;">
+        <h3 style="margin-bottom: 1.25rem;">Candidate Information Profile</h3>
+        <form method="POST" action="{{ url_for('predict_route') }}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+                <!-- Academic Stats -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Cumulative CGPA</label>
+                    <input type="number" step="0.01" min="0" max="10" name="CGPA" value="{{ form_data.CGPA if form_data else '8.75' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Attendance Percentage</label>
+                    <input type="number" step="0.1" min="0" max="100" name="AttendancePercent" value="{{ form_data.AttendancePercent if form_data else '88.0' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Coding Test Score (0-100)</label>
+                    <input type="number" step="1" min="0" max="100" name="CodingTestScore" value="{{ form_data.CodingTestScore if form_data else '90' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Aptitude Test Score (0-100)</label>
+                    <input type="number" step="1" min="0" max="100" name="AptitudeTestScore" value="{{ form_data.AptitudeTestScore if form_data else '85' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Soft Skills Rating (0-5)</label>
+                    <input type="number" step="0.1" min="0" max="5" name="SoftSkillsRating" value="{{ form_data.SoftSkillsRating if form_data else '4.5' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Mock Interview Score (0-100)</label>
+                    <input type="number" step="1" min="0" max="100" name="MockInterviewScore" value="{{ form_data.MockInterviewScore if form_data else '88' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Internships Completed</label>
+                    <input type="number" step="1" min="0" name="Internships" value="{{ form_data.Internships if form_data else '2' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Academic Projects</label>
+                    <input type="number" step="1" min="0" name="Projects" value="{{ form_data.Projects if form_data else '3' }}" required style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">College Tier</label>
+                    <select name="CollegeTier" style="width: 100%; background: #0f172a; border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                        <option value="1" {% if form_data and form_data.CollegeTier == '1' %}selected{% endif %}>Tier 1</option>
+                        <option value="2" {% if form_data and form_data.CollegeTier == '2' %}selected{% endif %}>Tier 2</option>
+                        <option value="3" {% if form_data and form_data.CollegeTier == '3' %}selected{% endif %}>Tier 3</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Stream</label>
+                    <select name="Stream" style="width: 100%; background: #0f172a; border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Mechanical">Mechanical</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Specialisation</label>
+                    <select name="Specialisation" style="width: 100%; background: #0f172a; border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                        <option value="Data Science">Data Science</option>
+                        <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Cyber Security">Cyber Security</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">History of Backlogs</label>
+                    <select name="HistoryOfBacklogs" style="width: 100%; background: #0f172a; border: 1px solid var(--border-glass); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px;">
+                        <option value="No">No Backlogs</option>
+                        <option value="Yes">Has Backlog History</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Auto-fill semester SGPA defaults based on CGPA behind the scenes -->
+            <input type="hidden" name="SGPA_Sem1" value="8.5">
+            <input type="hidden" name="SGPA_Sem2" value="8.6">
+            <input type="hidden" name="SGPA_Sem3" value="8.7">
+            <input type="hidden" name="SGPA_Sem4" value="8.8">
+            <input type="hidden" name="SGPA_Sem5" value="8.9">
+            <input type="hidden" name="SGPA_Sem6" value="9.0">
+            <input type="hidden" name="SGPA_Sem7" value="9.0">
+            <input type="hidden" name="SGPA_Sem8" value="9.1">
+            <input type="hidden" name="Workshops" value="2">
+            <input type="hidden" name="Certifications" value="2">
+            <input type="hidden" name="Publications" value="0">
+            <input type="hidden" name="Gender" value="Male">
+            <input type="hidden" name="City" value="Bangalore">
+            <input type="hidden" name="Hostel" value="No">
+            <input type="hidden" name="CGPA_Tier" value="High">
+
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" style="background: var(--accent-gradient); color: #fff; border: none; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem;">
+                    🚀 Run Production Placement Inference
+                </button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

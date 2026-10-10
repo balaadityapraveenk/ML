@@ -1,42 +1,75 @@
 {% extends "base.html" %}
 
-{% block title %}Home Dashboard - Placement Prediction Project{% endblock %}
+{% block title %}Home Dashboard - Placement Prediction ML Lifecycle{% endblock %}
 
 {% block content %}
-    <h2>Welcome to Placement Prediction Dashboard</h2>
-    <p>This ML web application guides you through loading datasets, cleaning and preprocessing variables, training predictive models, and running placement predictions.</p>
+    <h2>End-to-End Placement Prediction & ML Engineering System</h2>
+    <p style="color: var(--text-secondary); max-width: 900px; margin-bottom: 2rem;">
+        A production-grade machine learning platform covering the complete ML system lifecycle: from data provenance, 
+        regularised linear models, tree ensembles, and unsupervised latent discovery to rigorous evaluation, 
+        training-serving skew prevention, REST serving, drift monitoring, and request lineage tracing.
+    </p>
 
-    <h3 style="margin-top: 2rem;">Quick Access Options</h3>
-    <div class="dashboard-grid">
+    <h3>Curriculum & Lifecycle Modules</h3>
+    <div class="dashboard-grid" style="margin-top: 1rem;">
         <a href="{{ url_for('data_loading') }}" class="dashboard-card">
             <div class="card-icon">📂</div>
-            <h4>Data Loading</h4>
-            <p>Load the placement dataset, view descriptive metadata, duplicate stats, and browse original records.</p>
+            <h4>1. Data Ingestion & Provenance</h4>
+            <p>Load 50,000 university placement records, inspect schemas, missing values, duplicates, and column roles.</p>
         </a>
 
         <a href="{{ url_for('preprocessing_route') }}" class="dashboard-card">
             <div class="card-icon">⚙️</div>
-            <h4>Preprocessing</h4>
-            <p>Impute missing values, convert categorical text features to numeric labels, and standardize values.</p>
+            <h4>2. Data Preprocessing</h4>
+            <p>Median imputation, categorical encoding, and feature standardization with reproducible pipelines.</p>
         </a>
 
         <a href="{{ url_for('eda_route') }}" class="dashboard-card">
             <div class="card-icon">📊</div>
-            <h4>Exploratory Analysis</h4>
-            <p>Explore distributions, analyze categorical trends via charts, and view correlation heatmaps.</p>
+            <h4>3. Exploratory Data Analysis</h4>
+            <p>Statistical distributions, cross-feature correlations, histogram bins, and attribute interactions.</p>
         </a>
 
+        <a href="{{ url_for('linear_models_route') }}" class="dashboard-card">
+            <div class="card-icon">📈</div>
+            <h4>4. Linear Supervised Models</h4>
+            <p>Linear, Ridge, Lasso, ElasticNet, Binary & Multinomial Logistic Regression with bias-variance & scaling reasoning.</p>
+        </a>
 
-        <div class="dashboard-card disabled">
-            <div class="card-icon">🧠</div>
-            <h4>Model Training</h4>
-            <p>Select features, choose algorithms, run machine learning models, and analyze performance (coming soon).</p>
-        </div>
+        <a href="{{ url_for('tree_models_route') }}" class="dashboard-card">
+            <div class="card-icon">🌲</div>
+            <h4>5. Tree-Based Ensembles</h4>
+            <p>Decision Trees, Random Forests, XGBoost & LightGBM. Analyze Gini/Entropy splits, feature importance, and variance reduction.</p>
+        </a>
 
-        <div class="dashboard-card disabled">
+        <a href="{{ url_for('unsupervised_route') }}" class="dashboard-card">
+            <div class="card-icon">🔍</div>
+            <h4>6. Unsupervised Learning</h4>
+            <p>K-Means clustering, Dendrograms, DBSCAN density grouping, PCA, t-SNE, UMAP embeddings, and Isolation Forest anomaly detection.</p>
+        </a>
+
+        <a href="{{ url_for('evaluation_route') }}" class="dashboard-card">
             <div class="card-icon">🎯</div>
-            <h4>Prediction</h4>
-            <p>Input candidate details and predict placement likelihood and estimated salary packages (coming soon).</p>
-        </div>
+            <h4>7. Model Evaluation & Tuning</h4>
+            <p>Stratified 5-Fold CV, PR-AUC, ROC-AUC, regression metrics (RMSE/MAE/R²), Brier calibration, and Bayesian optimization.</p>
+        </a>
+
+        <a href="{{ url_for('ml_engineering_route') }}" class="dashboard-card">
+            <div class="card-icon">🛠️</div>
+            <h4>8. ML Engineering & REST API</h4>
+            <p>Feature store, zero training-serving skew pipeline, model packaging, REST endpoints, and KS/PSI drift monitoring.</p>
+        </a>
+
+        <a href="{{ url_for('lifecycle_tracer_route') }}" class="dashboard-card">
+            <div class="card-icon">🔄</div>
+            <h4>9. Lifecycle Request Tracer</h4>
+            <p>Trace an individual production prediction request backwards across every preceding stage of the ML lifecycle.</p>
+        </a>
+
+        <a href="{{ url_for('predict_route') }}" class="dashboard-card" style="border-color: rgba(99, 102, 241, 0.5); background: rgba(99, 102, 241, 0.08);">
+            <div class="card-icon">🚀</div>
+            <h4>Live Placement Predictor</h4>
+            <p>Input candidate academic & test profile for instantaneous inference with probability and estimated salary package.</p>
+        </a>
     </div>
 {% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Tree-Based Supervised Models - Placement Prediction{% endblock %}
+
+{% block content %}
+    <h2>Tree-Based Supervised-Learning Models & Ensembles</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Empirical evaluation and theoretical reasoning across Decision Trees, Random Forests, XGBoost, and LightGBM.
+        Focuses on splitting criteria, feature importances, and ensemble variance reduction through bagging.
+    </p>
+
+    <!-- 1. Ensemble Classification Scorecard -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>1. Tree Architectures: Placement Status Classification</h3>
+        <div style="overflow-x: auto; margin-top: 1rem;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-glass); color: var(--text-secondary);">
+                        <th style="padding: 0.75rem;">Model Paradigm</th>
+                        <th style="padding: 0.75rem;">Type</th>
+                        <th style="padding: 0.75rem;">Accuracy</th>
+                        <th style="padding: 0.75rem;">Precision</th>
+                        <th style="padding: 0.75rem;">Recall</th>
+                        <th style="padding: 0.75rem;">F1-Score</th>
+                        <th style="padding: 0.75rem;">ROC-AUC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if summary and summary.classification_evaluation %}
+                        {% for model, m in summary.classification_evaluation.items() %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                            <td style="padding: 0.75rem; font-weight: 600; color: #f8fafc;">{{ model }}</td>
+                            <td style="padding: 0.75rem;">
+                                {% if "Forest" in model %}<span class="metric-badge" style="color: #34d399;">Bagging</span>
+                                {% elif "Boost" in model or "Light" in model %}<span class="metric-badge" style="color: #f59e0b;">Boosting</span>
+                                {% else %}<span class="metric-badge" style="color: #60a5fa;">Single Tree</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.75rem; color: var(--success-text); font-weight: 700;">{{ m.Accuracy }}</td>
+                            <td style="padding: 0.75rem;">{{ m.Precision }}</td>
+                            <td style="padding: 0.75rem;">{{ m.Recall }}</td>
+                            <td style="padding: 0.75rem; font-weight: 600;">{{ m.F1_Score }}</td>
+                            <td style="padding: 0.75rem; color: #818cf8;">{{ m.ROC_AUC }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. Variance Reduction & Splitting Criteria Reasoning -->
+    <div class="dashboard-section" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3>2. Theoretical Principles & Empirical Experiments</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.25rem;">
+                <h4 style="color: #38bdf8; margin-bottom: 0.6rem;">Ensemble Variance Reduction (Bagging)</h4>
+                {% if summary and summary.variance_reduction %}
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #34d399; margin-bottom: 0.4rem;">
+                        {{ summary.variance_reduction.Variance_Reduction_Percentage }}
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+                        Single Tree Variance: {{ summary.variance_reduction.Single_Decision_Tree_Prediction_Variance }} → RF Variance: {{ summary.variance_reduction.Random_Forest_Ensemble_Prediction_Variance }}
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                        {{ summary.variance_reduction.Theoretical_Explanation }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); border-radius: 10px; padding: 1.25rem;">
+                <h4 style="color: #f59e0b; margin-bottom: 0.6rem;">Splitting Criteria Comparison</h4>
+                {% if summary and summary.splitting_criteria %}
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.88rem;">
+                        <li style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem;">
+                            <strong>Gini Impurity:</strong> \(I_G(p) = 1 - \sum p_i^2\)<br>
+                            <span style="color: var(--text-secondary);">Accuracy: {{ summary.splitting_criteria.DecisionTree_Gini.Accuracy }} | F1: {{ summary.splitting_criteria.DecisionTree_Gini.F1_Score }}</span>
+                        </li>
+                        <li>
+                            <strong>Shannon Entropy:</strong> \(H(p) = -\sum p_i \log_2(p_i)\)<br>
+                            <span style="color: var(--text-secondary);">Accuracy: {{ summary.splitting_criteria.DecisionTree_Entropy.Accuracy }} | F1: {{ summary.splitting_criteria.DecisionTree_Entropy.F1_Score }}</span>
+                        </li>
+                    </ul>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.6rem;">
+                        Gini computes slightly faster due to absence of logarithms; both produce virtually identical splits on academic predictors.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Visualizations -->
+    <div class="dashboard-section" style="margin-bottom: 2rem;">
+        <h3>Tree Diagnostic Visualizations</h3>
+        <div style="display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem;">
+            <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                <h4 style="margin-bottom: 0.75rem; text-align: left;">Ensemble Variance Reduction (Bootstrap Boxplots)</h4>
+                <img src="{{ url_for('static', filename='tree_variance_reduction.png') }}" alt="Variance Reduction" style="max-width: 100%; border-radius: 8px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">Classification & Regression Benchmark</h4>
+                    <img src="{{ url_for('static', filename='tree_models_comparison.png') }}" alt="Tree Models Comparison" style="max-width: 100%; border-radius: 8px;">
+                </div>
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; text-align: center;">
+                    <h4 style="margin-bottom: 0.75rem; text-align: left;">Feature Importance Comparison (RF vs XGBoost)</h4>
+                    <img src="{{ url_for('static', filename='tree_feature_importance_comparison.png') }}" alt="Feature Importance" style="max-width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

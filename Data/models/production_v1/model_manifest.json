@@ -1,0 +1,54 @@
+{
+  "model_id": "placement_classifier_v1.0.0",
+  "version": "1.0.0",
+  "created_at": "2026-10-08T21:57:29.293273",
+  "author": "Antigravity ML Engineering",
+  "training_data_hash": "a2f6ba353be40325c7a2607fd7a6bfc2a98c94f9ab5abebf959a820ea41c8f04",
+  "training_samples": 10000,
+  "target": "PlacementStatus",
+  "skew_avoidance": "Unified ColumnTransformer + Estimator Pipeline",
+  "features": {
+    "numerical": [
+      "SGPA_Sem1",
+      "SGPA_Sem2",
+      "SGPA_Sem3",
+      "SGPA_Sem4",
+      "SGPA_Sem5",
+      "SGPA_Sem6",
+      "SGPA_Sem7",
+      "SGPA_Sem8",
+      "CGPA",
+      "AttendancePercent",
+      "Internships",
+      "Projects",
+      "Workshops",
+      "Certifications",
+      "Publications",
+      "AptitudeTestScore",
+      "SoftSkillsRating",
+      "CodingTestScore",
+      "MockInterviewScore"
+    ],
+    "categorical": [
+      "Gender",
+      "City",
+      "CollegeTier",
+      "Stream",
+      "Specialisation",
+      "Hostel",
+      "HistoryOfBacklogs",
+      "CGPA_Tier"
+    ],
+    "total_count": 28
+  },
+  "metrics": {
+    "train_accuracy": 0.9645,
+    "train_f1": 0.9734,
+    "train_roc_auc": 0.9958
+  },
+  "artifacts": {
+    "classifier": "placement_pipeline.joblib",
+    "regressor": "salary_pipeline.joblib",
+    "baseline": "baseline_distribution.json"
+  }
+}
