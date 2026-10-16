@@ -2,3 +2,7 @@
 {"timestamp": "2026-10-08T21:57:47.228452", "latency_ms": 175.58, "prediction": 1, "probability": 0.9869, "salary": 21.53}
 {"timestamp": "2026-10-08T22:03:26.524014", "latency_ms": 104.43, "prediction": 1, "probability": 0.9869, "salary": 21.53}
 {"timestamp": "2026-10-08T22:03:27.047846", "latency_ms": 97.84, "prediction": 1, "probability": 0.9869, "salary": 21.53}
+{"timestamp": "2026-10-16T09:28:26.494284", "latency_ms": 119.02, "prediction": 1, "probability": 0.9869, "salary": 21.53}
+{"timestamp": "2026-10-16T09:28:27.100060", "latency_ms": 109.18, "prediction": 1, "probability": 0.9869, "salary": 21.53}
+{"timestamp": "2026-10-16T09:33:21.337201", "latency_ms": 145.47, "prediction": 1, "probability": 0.9869, "salary": 21.53}
+{"timestamp": "2026-10-16T09:33:21.965088", "latency_ms": 137.51, "prediction": 1, "probability": 0.9869, "salary": 21.53}
