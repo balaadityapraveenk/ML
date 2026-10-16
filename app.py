@@ -17,7 +17,22 @@ from model_evaluation import run_evaluation_suite
 from ml_engineering import FeatureStore, ProductionPredictor, assess_data_drift, PACKAGE_DIR
 from lifecycle_tracer import trace_prediction_request, get_full_lifecycle_overview
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "Templates") if os.path.exists(os.path.join(BASE_DIR, "Templates")) else os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "Static") if os.path.exists(os.path.join(BASE_DIR, "Static")) else os.path.join(BASE_DIR, "static")
+
+app = Flask(
+    __name__,
+    template_folder=TEMPLATE_DIR,
+    static_folder=STATIC_DIR
+)
+
+@app.errorhandler(500)
+def handle_internal_error(e):
+    import traceback
+    traceback.print_exc()
+    return f"<h3>Internal Server Error</h3><p>{e}</p>", 500
+
 
 # Global singletons / caches
 _cache = {}
